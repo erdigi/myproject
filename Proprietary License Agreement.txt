@@ -33,5 +33,5 @@ This software Vulnerability_tracker.py is provided by ROMAN BALANESCU on the fol
 By using the Software, you agree to be bound by the terms of this license agreement.
 
 ROMAN BALANESCU
-Date: 18:00
+Date: 26/02/2024
 CONACT: https://www.linkedin.com/in/roman-balanescu-82262a162/
