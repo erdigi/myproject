@@ -1,8 +1,6 @@
 # Vulnerability_tracker.py
 
-# Proprietary License Agreement
-# This software Vulnerability_tracker.py is provided by ROMAN BALANESCU under the following terms:
-# For full license terms, please refer to the LICENSE file or visit: https://www.linkedin.com/in/roman-balanescu-82262a162/
+# This software Vulnerability_tracker.py is provided by ROMAN BALANESCU.
 
 import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
