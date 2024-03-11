@@ -11,13 +11,13 @@ class VulnerabilityTrackerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Vulnerability Tracker")
-        self.root.geometry("800x600")  # Increased size to accommodate the table
+        self.root.geometry("1920x1080")  # Adjusted size to fit 1920x1080 resolution
 
-        self.schedule_data = []  # List to store scheduled scans data
-        self.patch_data = []  # List to store tracked patching activities data
+        self.schedule_data = []  
+        self.patch_data = []  
 
         self.create_widgets()
-        self.load_saved_data()  # Load previously saved data when the app starts
+        self.load_saved_data()  
 
     def create_widgets(self):
         self.label = tk.Label(self.root, text="Schedule Vulnerability Scans and Track Patching Activities", font=("Helvetica", 16))
@@ -38,8 +38,11 @@ class VulnerabilityTrackerApp:
         self.patch_button = tk.Button(self.root, text="Track Patching", command=self.track_patching)
         self.patch_button.grid(row=11, column=1, padx=5, pady=5)
 
+        self.automate_patching_button = tk.Button(self.root, text="Automate Patching", command=self.automate_patching)
+        self.automate_patching_button.grid(row=11, column=2, padx=5, pady=5)
+
         self.edit_schedule_id_button = tk.Button(self.root, text="Edit Schedule ID", command=self.edit_schedule_id)
-        self.edit_schedule_id_button.grid(row=11, column=2, padx=5, pady=5)
+        self.edit_schedule_id_button.grid(row=11, column=3, padx=5, pady=5)
 
         self.open_schedule_button = tk.Button(self.root, text="Open Scheduled Scans", command=self.open_schedule_table)
         self.open_schedule_button.grid(row=12, column=0, padx=5, pady=5)
@@ -52,16 +55,12 @@ class VulnerabilityTrackerApp:
 
         self.email_var = tk.BooleanVar()
         self.email_checkbox = tk.Checkbutton(self.root, text="Send Email Notification", variable=self.email_var)
-        self.email_checkbox.grid(row=13, column=0, columnspan=3, padx=5, pady=5)
-
-        # Button to automate patching
-        self.automate_patching_button = tk.Button(self.root, text="Automate Patching", command=self.automate_patching)
-        self.automate_patching_button.grid(row=11, column=3, padx=5, pady=5)
+        self.email_checkbox.grid(row=13, column=0, columnspan=4, padx=5, pady=5, sticky="w")
 
         # Create the table headers
         self.tree = ttk.Treeview(self.root, columns=("ID", "Vulnerability Details", "IP Address", "Scan Date", "Scan Time", "Estimated Patch Date", "Estimated Patch Time", "Application", "Port", "Comment", "Schedule ID"), selectmode="extended")
         # Treeview headers...
-        self.tree.grid(row=14, column=0, columnspan=3, padx=5, pady=5, sticky="nsew")
+        self.tree.grid(row=14, column=0, columnspan=4, padx=5, pady=5, sticky="nsew")
 
         self.root.grid_rowconfigure(14, weight=1)
         self.root.grid_columnconfigure(3, weight=1)
@@ -83,7 +82,7 @@ class VulnerabilityTrackerApp:
             else:
                 scan_details = f"{vulnerability_details}\t{ip_address}\t{scan_date}\t{scan_time}\t{patch_date}\t{patch_time}\t{comment}"
 
-            scan_id = len(self.schedule_data) + 1  # Generate unique ID for the scan
+            scan_id = len(self.schedule_data) + 1  
             self.schedule_data.append((scan_id, vulnerability_details, ip_address, scan_date, scan_time, patch_date, patch_time, application, port, comment))
             self.tree.insert("", "end", values=(scan_id, vulnerability_details, ip_address, scan_date, scan_time, patch_date, patch_time, application, port, comment, ""))
             messagebox.showinfo("Success", "Vulnerability scan scheduled successfully!")
@@ -114,7 +113,7 @@ class VulnerabilityTrackerApp:
             else:
                 patch_details = f"{vulnerability_details}\t{ip_address}\t{patch_date}\t{patch_time}\t{estimated_patch_date}\t{estimated_patch_time}\t{comment}\t{schedule_id}"
 
-            patch_id = len(self.patch_data) + 1  # Generate unique ID for the patch
+            patch_id = len(self.patch_data) + 1  
             self.patch_data.append((patch_id, vulnerability_details, ip_address, patch_date, patch_time, estimated_patch_date, estimated_patch_time, application, port, comment, schedule_id))
             self.tree.insert("", "end", values=(patch_id, vulnerability_details, ip_address, patch_date, patch_time, estimated_patch_date, estimated_patch_time, application, port, comment, schedule_id))
             messagebox.showinfo("Success", "Patching activity tracked successfully!")
@@ -133,7 +132,7 @@ class VulnerabilityTrackerApp:
         if selected_items:
             for item in selected_items:
                 for data in self.patch_data:
-                    if data[0] == int(self.tree.item(item, "values")[0]):  # Find the patch data with the corresponding patch ID
+                    if data[0] == int(self.tree.item(item, "values")[0]):  
                         data_index = self.patch_data.index(data)
                         self.patch_data[data_index] = (data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], new_schedule_id)
                 self.save_data()
@@ -237,31 +236,20 @@ class VulnerabilityTrackerApp:
             json.dump(self.patch_data, file, indent=4)
 
     def automate_patching(self):
-        # Example function to demonstrate automated patching
-        # This function can be extended to integrate with actual patch management systems
         for patch_data in self.patch_data:
             vulnerability_details, ip_address, _, _, _, _, application, _, _, _, _ = patch_data
-            # Check if patching is needed based on vulnerability details, application, etc.
             if self.is_patching_needed(vulnerability_details, ip_address, application):
-                # Perform automated patching
                 self.execute_patch_command(ip_address, application)
-                # Update patching status in the UI or database
                 self.update_patching_status(patch_data)
                 messagebox.showinfo("Patching", f"Patching for {vulnerability_details} on {ip_address} completed successfully.")
 
     def is_patching_needed(self, vulnerability_details, ip_address, application):
-        # Example function to determine if patching is needed based on vulnerability details and application
-        # This can be replaced with actual logic to check system configuration and vulnerability severity
         return True
 
     def execute_patch_command(self, ip_address, application):
-        # Example function to execute patching command
-        # This can be replaced with actual commands to patch vulnerabilities on systems
         subprocess.run(["ssh", "user@{}".format(ip_address), "apt-get update && apt-get upgrade -y"])
 
     def update_patching_status(self, patch_data):
-        # Example function to update patching status in UI or database
-        # This can be replaced with actual update logic
         pass
 
 def main():
