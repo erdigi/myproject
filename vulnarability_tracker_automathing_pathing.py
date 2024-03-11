@@ -5,19 +5,18 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
-import subprocess
 
 class VulnerabilityTrackerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Vulnerability Tracker")
-        self.root.geometry("1920x1080")  # Adjusted size to fit 1920x1080 resolution
+        self.root.geometry("800x600")  # Increased size to accommodate the table
 
-        self.schedule_data = []  
-        self.patch_data = []  
+        self.schedule_data = []  # List to store scheduled scans data
+        self.patch_data = []  # List to store tracked patching activities data
 
         self.create_widgets()
-        self.load_saved_data()  
+        self.load_saved_data()  # Load previously saved data when the app starts
 
     def create_widgets(self):
         self.label = tk.Label(self.root, text="Schedule Vulnerability Scans and Track Patching Activities", font=("Helvetica", 16))
@@ -29,37 +28,93 @@ class VulnerabilityTrackerApp:
         self.vulnerability_entry = tk.Entry(self.root, width=50)
         self.vulnerability_entry.grid(row=1, column=1, padx=5, pady=5)
 
-        # Other entry fields...
+        self.ip_label = tk.Label(self.root, text="Enter IP Address:")
+        self.ip_label.grid(row=2, column=0, padx=5, pady=5, sticky="w")
+        self.ip_entry = tk.Entry(self.root, width=50)
+        self.ip_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        self.date_label = tk.Label(self.root, text="Enter Date (YYYY-MM-DD):")
+        self.date_label.grid(row=3, column=0, padx=5, pady=5, sticky="w")
+        self.date_entry = tk.Entry(self.root, width=50)
+        self.date_entry.grid(row=3, column=1, padx=5, pady=5)
+
+        self.time_label = tk.Label(self.root, text="Enter Time (HH:MM):")
+        self.time_label.grid(row=4, column=0, padx=5, pady=5, sticky="w")
+        self.time_entry = tk.Entry(self.root, width=50)
+        self.time_entry.grid(row=4, column=1, padx=5, pady=5)
+
+        self.estimated_patch_date_label = tk.Label(self.root, text="Enter Estimated Patch Date (YYYY-MM-DD):")
+        self.estimated_patch_date_label.grid(row=5, column=0, padx=5, pady=5, sticky="w")
+        self.patch_date_entry = tk.Entry(self.root, width=50)
+        self.patch_date_entry.grid(row=5, column=1, padx=5, pady=5)
+
+        self.estimated_patch_time_label = tk.Label(self.root, text="Enter Estimated Patch Time (HH:MM):")
+        self.estimated_patch_time_label.grid(row=6, column=0, padx=5, pady=5, sticky="w")
+        self.patch_time_entry = tk.Entry(self.root, width=50)
+        self.patch_time_entry.grid(row=6, column=1, padx=5, pady=5)
+
+        self.app_label = tk.Label(self.root, text="Enter Application to be Scanned:")
+        self.app_label.grid(row=7, column=0, padx=5, pady=5, sticky="w")
+        self.app_entry = tk.Entry(self.root, width=50)
+        self.app_entry.grid(row=7, column=1, padx=5, pady=5)
+
+        self.port_label = tk.Label(self.root, text="Enter Port (optional):")
+        self.port_label.grid(row=8, column=0, padx=5, pady=5, sticky="w")
+        self.port_entry = tk.Entry(self.root, width=50)
+        self.port_entry.grid(row=8, column=1, padx=5, pady=5)
+
+        # Comment field
+        self.comment_label = tk.Label(self.root, text="Enter Comment:")
+        self.comment_label.grid(row=9, column=0, padx=5, pady=5, sticky="w")
+        self.comment_entry = tk.Entry(self.root, width=50)
+        self.comment_entry.grid(row=9, column=1, padx=5, pady=5)
+
+        # Schedule ID field
+        self.schedule_id_label = tk.Label(self.root, text="Schedule ID:")
+        self.schedule_id_label.grid(row=10, column=0, padx=5, pady=5, sticky="w")
+        self.schedule_id_entry = tk.Entry(self.root, width=50)
+        self.schedule_id_entry.grid(row=10, column=1, padx=5, pady=5)
 
         # Buttons to schedule scan, track patching, edit schedule ID, and open tables
         self.schedule_button = tk.Button(self.root, text="Schedule Scan", command=self.schedule_scan)
-        self.schedule_button.grid(row=11, column=0, padx=5, pady=5)
+        self.schedule_button.grid(row=11, column=0, padx=(5, 2), pady=5)
 
         self.patch_button = tk.Button(self.root, text="Track Patching", command=self.track_patching)
-        self.patch_button.grid(row=11, column=1, padx=5, pady=5)
-
-        self.automate_patching_button = tk.Button(self.root, text="Automate Patching", command=self.automate_patching)
-        self.automate_patching_button.grid(row=11, column=2, padx=5, pady=5)
+        self.patch_button.grid(row=11, column=1, padx=2, pady=5)
 
         self.edit_schedule_id_button = tk.Button(self.root, text="Edit Schedule ID", command=self.edit_schedule_id)
-        self.edit_schedule_id_button.grid(row=11, column=3, padx=5, pady=5)
+        self.edit_schedule_id_button.grid(row=11, column=2, padx=2, pady=5)
+
+        self.automation_patch_button = tk.Button(self.root, text="Automation Patch", command=self.automation_patch)
+        self.automation_patch_button.grid(row=11, column=3, padx=2, pady=5)
 
         self.open_schedule_button = tk.Button(self.root, text="Open Scheduled Scans", command=self.open_schedule_table)
-        self.open_schedule_button.grid(row=12, column=0, padx=5, pady=5)
+        self.open_schedule_button.grid(row=12, column=0, columnspan=2, padx=(5, 2), pady=5)
 
         self.open_patch_button = tk.Button(self.root, text="Open Patching Activities", command=self.open_patch_table)
-        self.open_patch_button.grid(row=12, column=1, padx=5, pady=5)
+        self.open_patch_button.grid(row=12, column=2, columnspan=2, padx=2, pady=5)
 
         self.delete_row_button = tk.Button(self.root, text="Delete Row", command=self.delete_row)
-        self.delete_row_button.grid(row=12, column=2, padx=5, pady=5)
+        self.delete_row_button.grid(row=13, column=0, columnspan=2, padx=(5, 2), pady=5)
 
         self.email_var = tk.BooleanVar()
         self.email_checkbox = tk.Checkbutton(self.root, text="Send Email Notification", variable=self.email_var)
-        self.email_checkbox.grid(row=13, column=0, columnspan=4, padx=5, pady=5, sticky="w")
+        self.email_checkbox.grid(row=13, column=2, columnspan=2, padx=2, pady=5)
 
         # Create the table headers
         self.tree = ttk.Treeview(self.root, columns=("ID", "Vulnerability Details", "IP Address", "Scan Date", "Scan Time", "Estimated Patch Date", "Estimated Patch Time", "Application", "Port", "Comment", "Schedule ID"), selectmode="extended")
-        # Treeview headers...
+        self.tree.heading("#0", text="ID")
+        self.tree.heading("ID", text="ID")
+        self.tree.heading("Vulnerability Details", text="Vulnerability Details")
+        self.tree.heading("IP Address", text="IP Address")
+        self.tree.heading("Scan Date", text="Scan Date")
+        self.tree.heading("Scan Time", text="Scan Time")
+        self.tree.heading("Estimated Patch Date", text="Estimated Patch Date")
+        self.tree.heading("Estimated Patch Time", text="Estimated Patch Time")
+        self.tree.heading("Application", text="Application")
+        self.tree.heading("Port", text="Port")
+        self.tree.heading("Comment", text="Comment")
+        self.tree.heading("Schedule ID", text="Schedule ID")
         self.tree.grid(row=14, column=0, columnspan=4, padx=5, pady=5, sticky="nsew")
 
         self.root.grid_rowconfigure(14, weight=1)
@@ -82,7 +137,7 @@ class VulnerabilityTrackerApp:
             else:
                 scan_details = f"{vulnerability_details}\t{ip_address}\t{scan_date}\t{scan_time}\t{patch_date}\t{patch_time}\t{comment}"
 
-            scan_id = len(self.schedule_data) + 1  
+            scan_id = len(self.schedule_data) + 1  # Generate unique ID for the scan
             self.schedule_data.append((scan_id, vulnerability_details, ip_address, scan_date, scan_time, patch_date, patch_time, application, port, comment))
             self.tree.insert("", "end", values=(scan_id, vulnerability_details, ip_address, scan_date, scan_time, patch_date, patch_time, application, port, comment, ""))
             messagebox.showinfo("Success", "Vulnerability scan scheduled successfully!")
@@ -113,7 +168,7 @@ class VulnerabilityTrackerApp:
             else:
                 patch_details = f"{vulnerability_details}\t{ip_address}\t{patch_date}\t{patch_time}\t{estimated_patch_date}\t{estimated_patch_time}\t{comment}\t{schedule_id}"
 
-            patch_id = len(self.patch_data) + 1  
+            patch_id = len(self.patch_data) + 1  # Generate unique ID for the patch
             self.patch_data.append((patch_id, vulnerability_details, ip_address, patch_date, patch_time, estimated_patch_date, estimated_patch_time, application, port, comment, schedule_id))
             self.tree.insert("", "end", values=(patch_id, vulnerability_details, ip_address, patch_date, patch_time, estimated_patch_date, estimated_patch_time, application, port, comment, schedule_id))
             messagebox.showinfo("Success", "Patching activity tracked successfully!")
@@ -132,7 +187,7 @@ class VulnerabilityTrackerApp:
         if selected_items:
             for item in selected_items:
                 for data in self.patch_data:
-                    if data[0] == int(self.tree.item(item, "values")[0]):  
+                    if data[0] == int(self.tree.item(item, "values")[0]):  # Find the patch data with the corresponding patch ID
                         data_index = self.patch_data.index(data)
                         self.patch_data[data_index] = (data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], new_schedule_id)
                 self.save_data()
@@ -160,6 +215,10 @@ class VulnerabilityTrackerApp:
                 messagebox.showerror("Error", "Please select a row to delete.")
         else:
             messagebox.showerror("Error", "Incorrect password.")
+
+    def automation_patch(self):
+        # Add your automation patching code here
+        pass
 
     def open_schedule_table(self):
         self.open_table("Scheduled Scans", self.schedule_data)
@@ -234,23 +293,6 @@ class VulnerabilityTrackerApp:
 
         with open("patch_data.json", "w") as file:
             json.dump(self.patch_data, file, indent=4)
-
-    def automate_patching(self):
-        for patch_data in self.patch_data:
-            vulnerability_details, ip_address, _, _, _, _, application, _, _, _, _ = patch_data
-            if self.is_patching_needed(vulnerability_details, ip_address, application):
-                self.execute_patch_command(ip_address, application)
-                self.update_patching_status(patch_data)
-                messagebox.showinfo("Patching", f"Patching for {vulnerability_details} on {ip_address} completed successfully.")
-
-    def is_patching_needed(self, vulnerability_details, ip_address, application):
-        return True
-
-    def execute_patch_command(self, ip_address, application):
-        subprocess.run(["ssh", "user@{}".format(ip_address), "apt-get update && apt-get upgrade -y"])
-
-    def update_patching_status(self, patch_data):
-        pass
 
 def main():
     root = tk.Tk()
